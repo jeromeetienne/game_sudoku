@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Sudoku</title>
+	<meta name="description" content="A clean, fast Sudoku game built in TypeScript." />
+	<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+	<main class="app">
+		<header class="topbar">
+			<h1>Sudoku</h1>
+			<div class="meta">
+				<label class="field">
+					<span>Difficulty</span>
+					<select class="difficulty"></select>
+				</label>
+				<div class="field">
+					<span>Time</span>
+					<div class="timer">00:00</div>
+				</div>
+			</div>
+		</header>
+
+		<div class="board-wrap">
+			<div class="board" role="grid" aria-label="Sudoku board"></div>
+		</div>
+
+		<p class="status" aria-live="polite"></p>
+
+		<div class="numberpad" aria-label="Number pad"></div>
+
+		<div class="controls">
+			<button type="button" class="action new-game">New game</button>
+			<button type="button" class="action notes-toggle" aria-pressed="false">Notes</button>
+			<button type="button" class="action erase">Erase</button>
+			<button type="button" class="action hint">Hint</button>
+		</div>
+
+		<footer class="help">
+			<span><kbd>1</kbd>–<kbd>9</kbd> place</span>
+			<span><kbd>N</kbd> notes</span>
+			<span><kbd>⌫</kbd> erase</span>
+			<span><kbd>↑↓←→</kbd> move</span>
+		</footer>
+	</main>
+
+	<script type="module" src="dist/main.js"></script>
+</body>
+</html>
