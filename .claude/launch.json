@@ -1,0 +1,11 @@
+{
+	"version": "0.0.1",
+	"configurations": [
+		{
+			"name": "sudoku",
+			"runtimeExecutable": "npx",
+			"runtimeArgs": ["--yes", "http-server", "-c-1", "-p", "8090", "./web"],
+			"port": 8090
+		}
+	]
+}

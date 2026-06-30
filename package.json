@@ -1,0 +1,17 @@
+{
+	"name": "game-sudoku",
+	"version": "1.0.0",
+	"description": "A Sudoku game in static HTML + TypeScript, publishable on GitHub Pages",
+	"private": true,
+	"scripts": {
+		"build": "tsc",
+		"watch": "tsc --watch",
+		"serve": "npx --yes http-server -c-1 -p 8080 ./web",
+		"predeploy": "npm run build",
+		"deploy": "gh-pages -d web -t"
+	},
+	"devDependencies": {
+		"gh-pages": "^6.1.0",
+		"typescript": "^5.4.0"
+	}
+}
