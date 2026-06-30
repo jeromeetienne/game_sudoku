@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+	<defs>
+		<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+			<stop offset="0" stop-color="#1a2348" />
+			<stop offset="1" stop-color="#0a0e1f" />
+		</linearGradient>
+		<linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+			<stop offset="0" stop-color="#7c9cff" />
+			<stop offset="1" stop-color="#56e0ff" />
+		</linearGradient>
+		<filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+			<feGaussianBlur stdDeviation="14" result="b" />
+			<feMerge>
+				<feMergeNode in="b" />
+				<feMergeNode in="SourceGraphic" />
+			</feMerge>
+		</filter>
+	</defs>
+
+	<rect width="512" height="512" rx="116" fill="url(#bg)" />
+
+	<g transform="translate(96 96)">
+		<rect x="0" y="0" width="320" height="320" rx="36" fill="none" stroke="rgba(160,172,235,0.40)" stroke-width="6" />
+
+		<rect x="220" y="100" width="100" height="100" fill="url(#accent)" opacity="0.16" />
+
+		<g stroke="rgba(150,164,224,0.45)" stroke-width="4" stroke-linecap="round">
+			<line x1="106.7" y1="14" x2="106.7" y2="306" />
+			<line x1="213.3" y1="14" x2="213.3" y2="306" />
+			<line x1="14" y1="106.7" x2="306" y2="106.7" />
+			<line x1="14" y1="213.3" x2="306" y2="213.3" />
+		</g>
+
+		<g font-family="'Sora','Inter',system-ui,sans-serif" font-weight="800" font-size="72" text-anchor="middle">
+			<text x="53" y="80" fill="#eef1ff">5</text>
+			<text x="160" y="187" fill="#9aa4d4">3</text>
+			<text x="53" y="294" fill="#9aa4d4">9</text>
+			<text x="266" y="294" fill="#eef1ff">1</text>
+			<text x="266" y="187" fill="url(#accent)" filter="url(#glow)">7</text>
+		</g>
+	</g>
+</svg>

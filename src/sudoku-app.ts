@@ -230,11 +230,8 @@ export class SudokuApp {
 		if (view.sameValue === true) {
 			el.classList.add('same-value');
 		}
-		if (SudokuApp.isBoxEdgeRight(view.index) === true) {
-			el.classList.add('box-right');
-		}
-		if (SudokuApp.isBoxEdgeBottom(view.index) === true) {
-			el.classList.add('box-bottom');
+		if (SudokuApp.isBoxAlt(view.index) === true) {
+			el.classList.add('box-alt');
 		}
 
 		if (view.value !== 0) {
@@ -267,14 +264,10 @@ export class SudokuApp {
 		}
 	}
 
-	private static isBoxEdgeRight(index: number): boolean {
-		const col = index % 9;
-		return col === 2 || col === 5;
-	}
-
-	private static isBoxEdgeBottom(index: number): boolean {
-		const row = Math.floor(index / 9);
-		return row === 2 || row === 5;
+	private static isBoxAlt(index: number): boolean {
+		const boxRow = Math.floor(Math.floor(index / 9) / 3);
+		const boxCol = Math.floor((index % 9) / 3);
+		return (boxRow + boxCol) % 2 === 1;
 	}
 
 	private static formatTime(ms: number): string {

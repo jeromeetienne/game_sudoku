@@ -4,8 +4,9 @@
 		{
 			"name": "sudoku",
 			"runtimeExecutable": "npx",
-			"runtimeArgs": ["--yes", "http-server", "-c-1", "-p", "8090", "./web"],
-			"port": 8090
+			"runtimeArgs": ["--yes", "http-server", "-c-1", "./web"],
+			"port": 8090,
+			"autoPort": true
 		}
 	]
 }
