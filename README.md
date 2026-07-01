@@ -19,7 +19,7 @@ framework, no runtime dependencies. Deployed to GitHub Pages with a single comma
 
 ```bash
 npm install
-npm run build      # compile src/*.ts -> web/dist/*.js
+npm run build      # compile web/ts/*.ts -> web/dist/*.js
 npm run watch      # rebuild on change
 npm run serve      # serve web/ at http://localhost:8080
 ```
@@ -47,12 +47,12 @@ game_sudoku/
 │   ├── index.html
 │   ├── styles.css
 │   ├── .nojekyll
+│   ├── ts/                 # TypeScript source
+│   │   ├── sudoku-generator.ts # puzzle generation, solver, uniqueness check
+│   │   ├── game-state.ts       # board state, notes, conflicts, win detection
+│   │   ├── sudoku-app.ts        # DOM rendering, input handling, timer
+│   │   └── main.ts             # entry point
 │   └── dist/               # compiled JS (git-ignored, produced by tsc)
-├── src/                    # TypeScript source
-│   ├── sudoku-generator.ts # puzzle generation, solver, uniqueness check
-│   ├── game-state.ts       # board state, notes, conflicts, win detection
-│   ├── sudoku-app.ts        # DOM rendering, input handling, timer
-│   └── main.ts             # entry point
 ├── tsconfig.json           # strict; outputs to web/dist
 └── package.json            # build / watch / serve / deploy scripts
 ```

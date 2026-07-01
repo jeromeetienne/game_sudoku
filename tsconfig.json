@@ -8,9 +8,9 @@
 		"noUnusedParameters": true,
 		"noImplicitReturns": true,
 		"outDir": "web/dist",
-		"rootDir": "src",
+		"rootDir": "web/ts",
 		"sourceMap": true,
 		"lib": ["ES2020", "DOM", "DOM.Iterable"]
 	},
-	"include": ["src/**/*.ts"]
+	"include": ["web/ts/**/*.ts"]
 }
