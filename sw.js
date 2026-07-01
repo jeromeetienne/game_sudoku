@@ -1,14 +1,19 @@
-const CACHE_VERSION = 'sudoku-v2';
+/// <reference lib="webworker" />
+
+/** @type {ServiceWorkerGlobalScope & typeof globalThis} */
+const sw = /** @type {any} */ (self);
+
+const CACHE_VERSION = 'sudoku-v4';
 
 const PRECACHE_URLS = [
 	'./',
 	'./index.html',
 	'./styles.css',
 	'./manifest.webmanifest',
-	'./dist/main.js',
-	'./dist/sudoku-app.js',
-	'./dist/game-state.js',
-	'./dist/sudoku-generator.js',
+	'./js/main.js',
+	'./js/sudoku-app.js',
+	'./js/game-state.js',
+	'./js/sudoku-generator.js',
 	'./icons/icon.svg',
 	'./icons/icon-192.png',
 	'./icons/icon-512.png',
@@ -18,16 +23,16 @@ const PRECACHE_URLS = [
 	'./icons/favicon-32.png',
 ];
 
-self.addEventListener('install', (event) => {
+sw.addEventListener('install', (event) => {
 	event.waitUntil(
 		caches
 			.open(CACHE_VERSION)
 			.then((cache) => cache.addAll(PRECACHE_URLS))
-			.then(() => self.skipWaiting()),
+			.then(() => sw.skipWaiting()),
 	);
 });
 
-self.addEventListener('activate', (event) => {
+sw.addEventListener('activate', (event) => {
 	event.waitUntil(
 		caches
 			.keys()
@@ -38,11 +43,11 @@ self.addEventListener('activate', (event) => {
 						.map((key) => caches.delete(key)),
 				),
 			)
-			.then(() => self.clients.claim()),
+			.then(() => sw.clients.claim()),
 	);
 });
 
-self.addEventListener('fetch', (event) => {
+sw.addEventListener('fetch', (event) => {
 	const request = event.request;
 
 	if (request.method !== 'GET') {
@@ -51,27 +56,35 @@ self.addEventListener('fetch', (event) => {
 
 	if (request.mode === 'navigate') {
 		event.respondWith(
-			fetch(request).catch(() =>
-				caches.match('./index.html').then((cached) => {
-					if (cached !== undefined) {
-						return cached;
-					}
-					return caches.match('./');
-				}),
-			),
+			fetch(request).catch(async () => {
+				const cachedIndex = await caches.match('./index.html');
+				if (cachedIndex !== undefined) {
+					return cachedIndex;
+				}
+
+				const cachedRoot = await caches.match('./');
+				if (cachedRoot !== undefined) {
+					return cachedRoot;
+				}
+
+				return new Response('Offline', {
+					status: 503,
+					statusText: 'Service Unavailable',
+					headers: {
+						'Content-Type': 'text/plain',
+					},
+				});
+			}),
 		);
 		return;
 	}
 
 	event.respondWith(
 		caches.match(request).then((cached) => {
-			if (cached !== undefined) {
-				return cached;
-			}
-			return fetch(request).then((response) => {
+			const networkFetch = fetch(request).then((response) => {
 				if (
 					response.ok === true &&
-					(request.url.startsWith(self.location.origin) ||
+					(request.url.startsWith(sw.location.origin) ||
 						request.url.includes('fonts.g'))
 				) {
 					const copy = response.clone();
@@ -79,6 +92,12 @@ self.addEventListener('fetch', (event) => {
 				}
 				return response;
 			});
+
+			if (cached !== undefined) {
+				networkFetch.catch(() => undefined);
+				return cached;
+			}
+			return networkFetch;
 		}),
 	);
 });
