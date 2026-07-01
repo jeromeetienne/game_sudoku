@@ -230,9 +230,6 @@ export class SudokuApp {
 		if (view.sameValue === true) {
 			el.classList.add('same-value');
 		}
-		if (SudokuApp.isBoxAlt(view.index) === true) {
-			el.classList.add('box-alt');
-		}
 
 		if (view.value !== 0) {
 			el.textContent = String(view.value);
@@ -262,12 +259,6 @@ export class SudokuApp {
 			}
 			button.classList.toggle('exhausted', remaining <= 0);
 		}
-	}
-
-	private static isBoxAlt(index: number): boolean {
-		const boxRow = Math.floor(Math.floor(index / 9) / 3);
-		const boxCol = Math.floor((index % 9) / 3);
-		return (boxRow + boxCol) % 2 === 1;
 	}
 
 	private static formatTime(ms: number): string {
