@@ -3,17 +3,17 @@
 /** @type {ServiceWorkerGlobalScope & typeof globalThis} */
 const sw = /** @type {any} */ (self);
 
-const CACHE_VERSION = 'sudoku-v3';
+const CACHE_VERSION = 'sudoku-v4';
 
 const PRECACHE_URLS = [
 	'./',
 	'./index.html',
 	'./styles.css',
 	'./manifest.webmanifest',
-	'./dist/main.js',
-	'./dist/sudoku-app.js',
-	'./dist/game-state.js',
-	'./dist/sudoku-generator.js',
+	'./js/main.js',
+	'./js/sudoku-app.js',
+	'./js/game-state.js',
+	'./js/sudoku-generator.js',
 	'./icons/icon.svg',
 	'./icons/icon-192.png',
 	'./icons/icon-512.png',

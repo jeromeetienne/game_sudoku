@@ -4,11 +4,10 @@
 	"description": "A Sudoku game in static HTML + TypeScript, publishable on GitHub Pages",
 	"private": true,
 	"scripts": {
-		"build": "tsc",
+		"build": "bash scripts/build.sh",
 		"watch": "tsc --watch",
-		"serve": "npx --yes http-server -c-1 -p 8080 ./web",
-		"predeploy": "npm run build",
-		"deploy": "gh-pages -d web -t"
+		"serve": "npm run build && npx --yes http-server -c-1 -p 8080 ./dist",
+		"deploy": "npm run build && gh-pages -d dist -t"
 	},
 	"devDependencies": {
 		"gh-pages": "^6.1.0",
