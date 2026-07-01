@@ -18,7 +18,7 @@ cleanup() {
 trap cleanup EXIT INT TERM
 
 echo "Watching web/ts/ -> dist/js/ (tsc)"
-npx tsc --watch --preserveWatchOutput &
+npx tsc -p tsconfig.build.json --watch --preserveWatchOutput &
 pids+=($!)
 
 echo "Watching static assets web/ -> dist/ (chokidar)"

@@ -3,7 +3,7 @@
 /** @type {ServiceWorkerGlobalScope & typeof globalThis} */
 const sw = /** @type {any} */ (self);
 
-const CACHE_VERSION = 'sudoku-v9';
+const CACHE_VERSION = 'sudoku-v13';
 
 const PRECACHE_URLS = [
 	'./',

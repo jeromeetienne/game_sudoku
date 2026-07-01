@@ -12,6 +12,6 @@ echo "Copying static assets web/ -> dist/"
 rsync -a --exclude='ts/' --exclude='dist/' web/ dist/
 
 echo "Compiling TypeScript -> dist/js/"
-npx tsc
+npx tsc -p tsconfig.build.json
 
 echo "Build complete: ./dist"

@@ -403,6 +403,32 @@ body {
 	font-size: 12.5px;
 }
 
+.credit {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	gap: 5px;
+	margin: 0;
+	color: var(--muted);
+	font-size: 12.5px;
+}
+
+.credit .heart {
+	color: var(--conflict);
+	vertical-align: -2px;
+}
+
+.credit a {
+	color: var(--accent);
+	text-decoration: none;
+	font-weight: 600;
+}
+
+.credit a:hover {
+	text-decoration: underline;
+}
+
 kbd {
 	background: rgba(255, 255, 255, 0.06);
 	border: 1px solid var(--card-border);
@@ -418,6 +444,10 @@ kbd {
 	body {
 		padding: 0;
 		align-items: stretch;
+	}
+
+	.help {
+		display: none;
 	}
 
 	.app {

@@ -3,6 +3,8 @@
 	"version": "1.0.0",
 	"description": "A Sudoku game in static HTML + TypeScript, publishable on GitHub Pages",
 	"private": true,
+	"license": "MIT",
+	"author": "Jerome Etienne",
 	"scripts": {
 		"build": "bash scripts/build.sh",
 		"watch": "bash scripts/watch.sh",

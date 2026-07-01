@@ -7,10 +7,9 @@
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
 		"noImplicitReturns": true,
-		"outDir": "dist/js",
-		"rootDir": "web/ts",
 		"sourceMap": true,
-		"lib": ["ES2020", "DOM", "DOM.Iterable"]
+		"lib": ["ES2020", "DOM", "DOM.Iterable"],
+		"noEmit": true
 	},
 	"include": ["web/ts/**/*.ts"]
 }
