@@ -12,6 +12,7 @@ framework, no runtime dependencies. Deployed to GitHub Pages with a single comma
 - **Pencil notes**, live conflict detection, and peer / same-value highlighting
 - **Number pad** with remaining-count badges, **hints**, and a play timer
 - **Full keyboard control** — `1`–`9` to place, `N` for notes, `⌫` to erase, arrow keys to move
+- **Installable PWA** — service worker precache for offline play, web app manifest, icons
 - **Aurora glass UI** — frosted card, gradient accents, smooth animations
 - **Responsive** layout for desktop and mobile
 
@@ -19,16 +20,16 @@ framework, no runtime dependencies. Deployed to GitHub Pages with a single comma
 
 ```bash
 npm install
-npm run build      # compile web/ts/*.ts -> web/dist/*.js
-npm run watch      # rebuild on change
-npm run serve      # serve web/ at http://localhost:8080
+npm run build      # build the full site (assets + compiled TS) into ./dist
+npm run watch      # rebuild TypeScript and mirror static assets into ./dist on change
+npm run serve      # build, then serve ./dist at http://localhost:8080
 ```
 
 Then open the served page to play.
 
 ## Deploy to GitHub Pages
 
-Publishing is one command — it builds the TypeScript and pushes the `web/` folder to the
+Publishing is one command — it builds the site into `./dist` and pushes that folder to the
 `gh-pages` branch via the [`gh-pages`](https://www.npmjs.com/package/gh-pages) package:
 
 ```bash
@@ -43,19 +44,28 @@ One-time setup: in **Settings → Pages**, set the source to **Deploy from a bra
 
 ```
 game_sudoku/
-├── web/                    # publish root (served by GitHub Pages)
+├── web/                        # source assets (copied to ./dist at build)
 │   ├── index.html
-│   ├── css/                # stylesheets
-│   │   └── styles.css
+│   ├── manifest.webmanifest    # PWA manifest
+│   ├── sw.js                   # service worker (offline precache)
 │   ├── .nojekyll
-│   ├── ts/                 # TypeScript source
-│   │   ├── sudoku-generator.ts # puzzle generation, solver, uniqueness check
-│   │   ├── game-state.ts       # board state, notes, conflicts, win detection
-│   │   ├── sudoku-app.ts        # DOM rendering, input handling, timer
-│   │   └── main.ts             # entry point
-│   └── dist/               # compiled JS (git-ignored, produced by tsc)
-├── tsconfig.json           # strict; outputs to web/dist
-└── package.json            # build / watch / serve / deploy scripts
+│   ├── css/
+│   │   └── styles.css
+│   ├── images/
+│   │   └── icons/              # favicons, PWA and apple-touch icons
+│   └── ts/                     # TypeScript source
+│       ├── sudoku-generator.ts # puzzle generation, solver, uniqueness check
+│       ├── game-state.ts       # board state, notes, conflicts, win detection
+│       ├── sudoku-app.ts       # DOM rendering, input handling, timer
+│       └── main.ts             # entry point
+├── scripts/
+│   ├── build.sh                # build the full site into ./dist
+│   └── watch.sh                # watch TS + static assets into ./dist
+├── dist/                       # build output, published to GitHub Pages (git-ignored)
+├── tsconfig.json               # editor / type-check config (noEmit)
+├── tsconfig.build.json         # build config (emits compiled JS to dist/js)
+├── LICENSE
+└── package.json                # build / watch / serve / deploy scripts
 ```
 
 ## How the generator works
