@@ -5,7 +5,7 @@
 	"private": true,
 	"scripts": {
 		"build": "bash scripts/build.sh",
-		"watch": "tsc --watch",
+		"watch": "bash scripts/watch.sh",
 		"serve": "npm run build && npx --yes http-server -c-1 -p 8080 ./dist",
 		"deploy": "npm run build && gh-pages -d dist -t"
 	},
