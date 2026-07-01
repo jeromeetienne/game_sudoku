@@ -3,24 +3,24 @@
 /** @type {ServiceWorkerGlobalScope & typeof globalThis} */
 const sw = /** @type {any} */ (self);
 
-const CACHE_VERSION = 'sudoku-v4';
+const CACHE_VERSION = 'sudoku-v9';
 
 const PRECACHE_URLS = [
 	'./',
 	'./index.html',
-	'./styles.css',
+	'./css/styles.css',
 	'./manifest.webmanifest',
 	'./js/main.js',
 	'./js/sudoku-app.js',
 	'./js/game-state.js',
 	'./js/sudoku-generator.js',
-	'./icons/icon.svg',
-	'./icons/icon-192.png',
-	'./icons/icon-512.png',
-	'./icons/apple-touch-icon.png',
-	'./icons/favicon.ico',
-	'./icons/favicon-16.png',
-	'./icons/favicon-32.png',
+	'./images/icons/icon.svg',
+	'./images/icons/icon-192.png',
+	'./images/icons/icon-512.png',
+	'./images/icons/apple-touch-icon.png',
+	'./images/icons/favicon.ico',
+	'./images/icons/favicon-16.png',
+	'./images/icons/favicon-32.png',
 ];
 
 sw.addEventListener('install', (event) => {
@@ -45,6 +45,12 @@ sw.addEventListener('activate', (event) => {
 			)
 			.then(() => sw.clients.claim()),
 	);
+});
+
+sw.addEventListener('message', (event) => {
+	if (event.data === 'GET_VERSION' && event.ports[0] !== undefined) {
+		event.ports[0].postMessage(CACHE_VERSION);
+	}
 });
 
 sw.addEventListener('fetch', (event) => {

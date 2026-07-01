@@ -45,7 +45,8 @@ One-time setup: in **Settings → Pages**, set the source to **Deploy from a bra
 game_sudoku/
 ├── web/                    # publish root (served by GitHub Pages)
 │   ├── index.html
-│   ├── styles.css
+│   ├── css/                # stylesheets
+│   │   └── styles.css
 │   ├── .nojekyll
 │   ├── ts/                 # TypeScript source
 │   │   ├── sudoku-generator.ts # puzzle generation, solver, uniqueness check

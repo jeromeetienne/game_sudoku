@@ -3,7 +3,9 @@ import type { CellView } from './game-state.js';
 import type { Difficulty } from './sudoku-generator.js';
 
 const DIFFICULTIES: Difficulty[] = ['easy', 'medium', 'hard', 'expert'];
+const DIFFICULTY_STORAGE_KEY = 'sudoku:difficulty';
 
+/** Wires the DOM (board, number pad, controls, keyboard) to a {@link GameState}. */
 export class SudokuApp {
 	private game: GameState;
 	private notesMode: boolean;
@@ -20,8 +22,13 @@ export class SudokuApp {
 	private notesBtn: HTMLButtonElement;
 	private padButtons: Map<number, HTMLButtonElement>;
 
+	/**
+	 * Builds the UI, restores the saved difficulty, and starts a new game.
+	 * @param root Container element holding the app's markup.
+	 */
 	constructor(root: HTMLElement) {
-		this.game = new GameState('easy');
+		const difficulty = SudokuApp.loadDifficulty();
+		this.game = new GameState(difficulty);
 		this.notesMode = false;
 		this.startedAt = Date.now();
 		this.elapsedMs = 0;
@@ -40,9 +47,10 @@ export class SudokuApp {
 		this.buildNumberPad(root);
 		this.bindControls(root);
 		this.bindKeyboard();
-		this.startNewGame('easy');
+		this.startNewGame(difficulty);
 	}
 
+	/** Creates the 81 cell buttons and wires their click handlers. */
 	private buildBoard(): void {
 		this.boardEl.innerHTML = '';
 		for (let index = 0; index < 81; index += 1) {
@@ -56,6 +64,10 @@ export class SudokuApp {
 		}
 	}
 
+	/**
+	 * Creates the 1..9 number pad buttons.
+	 * @param root Container element holding the `.numberpad` element.
+	 */
 	private buildNumberPad(root: HTMLElement): void {
 		const pad = SudokuApp.requireElement(root, '.numberpad');
 		pad.innerHTML = '';
@@ -70,6 +82,11 @@ export class SudokuApp {
 		}
 	}
 
+	/**
+	 * Populates the difficulty selector and binds the control buttons. Changing
+	 * the selector persists the choice immediately, even before a new game.
+	 * @param root Container element holding the control elements.
+	 */
 	private bindControls(root: HTMLElement): void {
 		this.difficultyEl.innerHTML = '';
 		for (const level of DIFFICULTIES) {
@@ -78,6 +95,10 @@ export class SudokuApp {
 			option.textContent = level.charAt(0).toUpperCase() + level.slice(1);
 			this.difficultyEl.appendChild(option);
 		}
+
+		this.difficultyEl.addEventListener('change', () => {
+			SudokuApp.saveDifficulty(this.difficultyEl.value as Difficulty);
+		});
 
 		SudokuApp.requireElement(root, '.new-game').addEventListener('click', () => {
 			this.startNewGame(this.difficultyEl.value as Difficulty);
@@ -94,10 +115,16 @@ export class SudokuApp {
 		this.notesBtn.addEventListener('click', () => this.toggleNotesMode());
 	}
 
+	/** Installs the global keydown handler for number entry and navigation. */
 	private bindKeyboard(): void {
 		document.addEventListener('keydown', (event) => this.onKeyDown(event));
 	}
 
+	/**
+	 * Routes keystrokes: 1-9 enter a value, Backspace/Delete/0 clear, N toggles
+	 * notes mode, and arrow keys move the selection.
+	 * @param event The keyboard event.
+	 */
 	private onKeyDown(event: KeyboardEvent): void {
 		if (event.key >= '1' && event.key <= '9') {
 			this.onNumberInput(Number(event.key));
@@ -125,6 +152,11 @@ export class SudokuApp {
 		}
 	}
 
+	/**
+	 * Moves the selection by a cell offset, staying on the board and preventing
+	 * horizontal moves from wrapping across row boundaries.
+	 * @param delta Index offset (+/-1 horizontal, +/-9 vertical).
+	 */
 	private moveSelection(delta: number): void {
 		const current = this.game.getSelected();
 		const start = current < 0 ? 0 : current;
@@ -139,11 +171,20 @@ export class SudokuApp {
 		this.render();
 	}
 
+	/**
+	 * Selects a cell in response to a click.
+	 * @param index Cell index 0..80.
+	 */
 	private onCellClick(index: number): void {
 		this.game.select(index);
 		this.render();
 	}
 
+	/**
+	 * Applies a digit to the selected cell, as a note or a value depending on the
+	 * current mode. Ignored once the puzzle is solved.
+	 * @param value Digit 1..9.
+	 */
 	private onNumberInput(value: number): void {
 		if (this.solved === true) {
 			return;
@@ -156,6 +197,7 @@ export class SudokuApp {
 		this.afterInput();
 	}
 
+	/** Re-renders and checks for a win after any board-changing input. */
 	private afterInput(): void {
 		this.render();
 		if (this.game.isSolved() === true) {
@@ -163,14 +205,21 @@ export class SudokuApp {
 		}
 	}
 
+	/** Flips notes (pencil-mark) mode and updates the toggle button's state. */
 	private toggleNotesMode(): void {
 		this.notesMode = this.notesMode === false;
 		this.notesBtn.classList.toggle('active', this.notesMode);
 		this.notesBtn.setAttribute('aria-pressed', String(this.notesMode));
 	}
 
+	/**
+	 * Starts a fresh puzzle: generates it, persists the difficulty, resets UI
+	 * state, and restarts the timer.
+	 * @param difficulty Difficulty of the new puzzle.
+	 */
 	private startNewGame(difficulty: Difficulty): void {
 		this.game.newGame(difficulty);
+		SudokuApp.saveDifficulty(difficulty);
 		this.difficultyEl.value = difficulty;
 		this.solved = false;
 		this.notesMode = false;
@@ -182,6 +231,7 @@ export class SudokuApp {
 		this.render();
 	}
 
+	/** Handles a win: stops the timer and shows the completion time. */
 	private onSolved(): void {
 		this.solved = true;
 		this.stopTimer();
@@ -190,6 +240,7 @@ export class SudokuApp {
 		this.statusEl.textContent = `Solved in ${SudokuApp.formatTime(this.elapsedMs)}! 🎉`;
 	}
 
+	/** Resets the elapsed time and starts ticking the timer every 250ms. */
 	private restartTimer(): void {
 		this.stopTimer();
 		this.startedAt = Date.now();
@@ -198,6 +249,7 @@ export class SudokuApp {
 		this.timerId = window.setInterval(() => this.updateTimer(), 250);
 	}
 
+	/** Stops the timer interval if one is running. */
 	private stopTimer(): void {
 		if (this.timerId !== 0) {
 			window.clearInterval(this.timerId);
@@ -205,11 +257,13 @@ export class SudokuApp {
 		}
 	}
 
+	/** Recomputes elapsed time and writes it to the timer display. */
 	private updateTimer(): void {
 		this.elapsedMs = Date.now() - this.startedAt;
 		this.timerEl.textContent = SudokuApp.formatTime(this.elapsedMs);
 	}
 
+	/** Renders every cell and the number pad from the current game state. */
 	private render(): void {
 		const cells = this.game.getCells();
 		for (const view of cells) {
@@ -218,6 +272,12 @@ export class SudokuApp {
 		this.renderPad();
 	}
 
+	/**
+	 * Applies a cell's view model to its DOM element: status/highlight classes,
+	 * then either its value or its pencil-mark grid.
+	 * @param el The cell's DOM element.
+	 * @param view The cell's view model.
+	 */
 	private renderCell(el: HTMLElement, view: CellView): void {
 		el.className = 'cell';
 		el.classList.add(`status-${view.status}`);
@@ -250,6 +310,7 @@ export class SudokuApp {
 		el.appendChild(grid);
 	}
 
+	/** Updates each pad button's remaining count and exhausted state. */
 	private renderPad(): void {
 		for (const [value, button] of this.padButtons) {
 			const remaining = this.game.remainingForValue(value);
@@ -261,6 +322,40 @@ export class SudokuApp {
 		}
 	}
 
+	/**
+	 * Reads the saved difficulty, validating it against the known set.
+	 * @returns The stored difficulty, or 'easy' if missing, invalid, or storage
+	 * is unavailable.
+	 */
+	private static loadDifficulty(): Difficulty {
+		try {
+			const saved = window.localStorage.getItem(DIFFICULTY_STORAGE_KEY);
+			if (saved !== null && DIFFICULTIES.includes(saved as Difficulty) === true) {
+				return saved as Difficulty;
+			}
+		} catch {
+			return 'easy';
+		}
+		return 'easy';
+	}
+
+	/**
+	 * Persists the chosen difficulty, ignoring storage failures.
+	 * @param difficulty Difficulty to store.
+	 */
+	private static saveDifficulty(difficulty: Difficulty): void {
+		try {
+			window.localStorage.setItem(DIFFICULTY_STORAGE_KEY, difficulty);
+		} catch {
+			return;
+		}
+	}
+
+	/**
+	 * Formats a duration as mm:ss.
+	 * @param ms Elapsed time in milliseconds.
+	 * @returns Zero-padded minutes and seconds.
+	 */
 	private static formatTime(ms: number): string {
 		const totalSeconds = Math.floor(ms / 1000);
 		const minutes = Math.floor(totalSeconds / 60);
@@ -268,6 +363,12 @@ export class SudokuApp {
 		return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 	}
 
+	/**
+	 * Finds a required descendant element or throws if it is missing.
+	 * @param root Element to search within.
+	 * @param selector CSS selector for the target element.
+	 * @returns The matched element, typed as T.
+	 */
 	private static requireElement<T extends HTMLElement>(root: HTMLElement, selector: string): T {
 		const found = root.querySelector(selector);
 		if (found === null) {

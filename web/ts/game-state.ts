@@ -1,7 +1,7 @@
 import { SudokuGenerator } from './sudoku-generator.js';
 import type { Difficulty, Puzzle } from './sudoku-generator.js';
 
-export type CellStatus = 'given' | 'empty' | 'filled' | 'conflict';
+export type CellStatus = 'given' | 'empty' | 'filled' | 'conflict' | 'wrong';
 
 export type CellView = {
 	readonly index: number;
@@ -15,13 +15,18 @@ export type CellView = {
 
 const CELL_COUNT = 81;
 
+/** Holds the mutable state of a single Sudoku game and derives view models from it. */
 export class GameState {
 	private puzzle: Puzzle;
 	private values: number[];
+	/** Per-cell pencil marks; only meaningful while a cell has no value (0). */
 	private notes: Set<number>[];
 	private selectedIndex: number;
 	private difficulty: Difficulty;
 
+	/**
+	 * @param difficulty Difficulty of the first puzzle to generate.
+	 */
 	constructor(difficulty: Difficulty) {
 		this.difficulty = difficulty;
 		this.puzzle = SudokuGenerator.generate(difficulty);
@@ -30,10 +35,15 @@ export class GameState {
 		this.selectedIndex = -1;
 	}
 
+	/** @returns The difficulty of the current puzzle. */
 	getDifficulty(): Difficulty {
 		return this.difficulty;
 	}
 
+	/**
+	 * Replaces the puzzle with a freshly generated one and resets all state.
+	 * @param difficulty Difficulty of the new puzzle.
+	 */
 	newGame(difficulty: Difficulty): void {
 		this.difficulty = difficulty;
 		this.puzzle = SudokuGenerator.generate(difficulty);
@@ -42,18 +52,32 @@ export class GameState {
 		this.selectedIndex = -1;
 	}
 
+	/**
+	 * Marks a cell as selected.
+	 * @param index Cell index 0..80, or a negative value to clear the selection.
+	 */
 	select(index: number): void {
 		this.selectedIndex = index;
 	}
 
+	/** @returns The selected cell index, or -1 if none is selected. */
 	getSelected(): number {
 		return this.selectedIndex;
 	}
 
+	/**
+	 * @param index Cell index 0..80.
+	 * @returns True if the cell is a fixed clue from the puzzle.
+	 */
 	isGiven(index: number): boolean {
 		return this.puzzle.given[index] !== 0;
 	}
 
+	/**
+	 * Sets the selected cell to a value, or clears it if it already holds that
+	 * value (toggle). Givens are ignored, and setting a value clears its notes.
+	 * @param value Value 1..9 to place.
+	 */
 	setValue(value: number): void {
 		const index = this.selectedIndex;
 		if (index < 0 || this.isGiven(index) === true) {
@@ -67,6 +91,11 @@ export class GameState {
 		}
 	}
 
+	/**
+	 * Toggles a pencil mark on the selected cell. No-op on givens or cells that
+	 * already hold a value.
+	 * @param value Note value 1..9 to toggle.
+	 */
 	toggleNote(value: number): void {
 		const index = this.selectedIndex;
 		if (index < 0 || this.isGiven(index) === true || this.values[index] !== 0) {
@@ -79,6 +108,7 @@ export class GameState {
 		}
 	}
 
+	/** Clears the value and notes of the selected cell, unless it is a given. */
 	clear(): void {
 		const index = this.selectedIndex;
 		if (index < 0 || this.isGiven(index) === true) {
@@ -88,6 +118,11 @@ export class GameState {
 		this.notes[index].clear();
 	}
 
+	/**
+	 * Fills the selected cell with its correct value from the solution.
+	 * @returns True if a hint was applied, false if the cell was a given or none
+	 * was selected.
+	 */
 	revealHint(): boolean {
 		const index = this.selectedIndex;
 		if (index < 0 || this.isGiven(index) === true) {
@@ -98,6 +133,10 @@ export class GameState {
 		return true;
 	}
 
+	/**
+	 * @param value Value 1..9.
+	 * @returns How many of this value are still unplaced (9 minus current count).
+	 */
 	remainingForValue(value: number): number {
 		let used = 0;
 		for (let i = 0; i < CELL_COUNT; i += 1) {
@@ -108,6 +147,7 @@ export class GameState {
 		return 9 - used;
 	}
 
+	/** @returns True when every cell matches the solution. */
 	isSolved(): boolean {
 		for (let i = 0; i < CELL_COUNT; i += 1) {
 			if (this.values[i] !== this.puzzle.solution[i]) {
@@ -117,6 +157,11 @@ export class GameState {
 		return true;
 	}
 
+	/**
+	 * Builds an immutable view model for every cell, including status and
+	 * highlight flags relative to the current selection.
+	 * @returns 81 cell views in row-major order.
+	 */
 	getCells(): CellView[] {
 		const conflicts = this.findConflicts();
 		const selectedValue = this.selectedIndex >= 0 ? this.values[this.selectedIndex] : 0;
@@ -136,6 +181,13 @@ export class GameState {
 		return cells;
 	}
 
+	/**
+	 * Classifies a cell for rendering. Order matters: givens and conflicts take
+	 * precedence over the plain filled/empty/wrong classification.
+	 * @param index Cell index 0..80.
+	 * @param conflicts Set of indices currently in conflict.
+	 * @returns The cell's display status.
+	 */
 	private statusOf(index: number, conflicts: Set<number>): CellStatus {
 		if (this.isGiven(index) === true) {
 			return 'given';
@@ -146,9 +198,17 @@ export class GameState {
 		if (this.values[index] === 0) {
 			return 'empty';
 		}
+		if (this.values[index] !== this.puzzle.solution[index]) {
+			return 'wrong';
+		}
 		return 'filled';
 	}
 
+	/**
+	 * @param index Cell index 0..80.
+	 * @returns True if the cell shares a row, column, or box with the selection
+	 * (and is not the selection itself).
+	 */
 	private isPeer(index: number): boolean {
 		if (this.selectedIndex < 0 || index === this.selectedIndex) {
 			return false;
@@ -159,6 +219,11 @@ export class GameState {
 		return sameRow === true || sameCol === true || sameBox === true;
 	}
 
+	/**
+	 * Finds every cell that shares its value with a peer (same row, column, or
+	 * box); both offending cells are flagged.
+	 * @returns The set of conflicting cell indices.
+	 */
 	private findConflicts(): Set<number> {
 		const conflicts = new Set<number>();
 		for (let index = 0; index < CELL_COUNT; index += 1) {
